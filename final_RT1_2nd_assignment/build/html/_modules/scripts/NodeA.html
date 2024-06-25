@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.NodeA &mdash; RT2_first 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            RT2_first
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">RT2_first</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scripts.NodeA</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scripts.NodeA</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: turtlebot_controller</span>
+<span class="sd">   :platform: Unix</span>
+<span class="sd">   :synopsis: Python module for the turtlebot_controller</span>
+<span class="sd">.. moduleauthor:: Peyman Peyvandi Pour</span>
+<span class="sd">This node implements a controller for the turtlesim</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#! /usr/bin/env python3 </span>
+
+
+<span class="c1"># import the necessary libraries</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="n">PoseStamped</span> 
+<span class="kn">import</span> <span class="nn">actionlib.msg</span> 
+<span class="kn">import</span> <span class="nn">assignment_2_2022.msg</span> 
+<span class="kn">import</span> <span class="nn">actionlib</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">nav_msgs.msg</span> <span class="kn">import</span> <span class="n">Odometry</span>
+<span class="kn">from</span> <span class="nn">rt1_2nd_assignment.msg</span> <span class="kn">import</span> <span class="n">odom_custom_msg</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1">#global variable</span>
+<span class="n">start_description_flag</span><span class="o">=</span><span class="mi">1</span>
+
+
+
+
+<span class="c1">#target_client function</span>
+<span class="c1">#this function is called when the user selects the target position operation</span>
+<span class="c1">#it asks the user to enter the x and y position of the target</span>
+<span class="c1">#it creates a goal and sends it to the action server</span>
+<span class="c1">#the goal is of type PoseStamped</span>
+<span class="c1">#the goal is sent to the action server using the send_goal function</span>
+<span class="c1">#the send_goal function is a member function of the SimpleActionClient class</span>
+<span class="c1">#the send_goal function is called with the goal as an argument</span>
+<span class="c1">#the goal is sent to the action server using the topic /reaching_goal</span>
+<span class="c1">#the goal is sent to the action server using the action type PlanningAction</span>
+<span class="c1">#the action type PlanningAction is defined in the package assignment_2_2022 and file Planning.action</span>
+
+<div class="viewcode-block" id="target_client"><a class="viewcode-back" href="../../index.html#scripts.NodeA.target_client">[docs]</a><span class="k">def</span> <span class="nf">target_client</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sends a goal of type PoseStamped to the action server using the send_goal function, after getting the</span>
+<span class="sd">    target position from the user. This function is called when the user selects the target position operation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">x_position</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Please enter X position: &quot;</span><span class="p">)</span>
+    <span class="n">y_position</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Please enter Y position: &quot;</span><span class="p">)</span>
+
+ 
+    <span class="n">x_position</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x_position</span><span class="p">)</span>
+    <span class="n">y_position</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_position</span><span class="p">)</span>
+ 
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">You entered: </span><span class="se">\n</span><span class="s1">position X: </span><span class="si">{</span><span class="n">x_position</span><span class="si">}</span><span class="s1">  </span><span class="se">\n</span><span class="s1">position Y: </span><span class="si">{</span><span class="n">y_position</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="c1"># Creates the SimpleActionClient, passing the type of the action</span>
+
+ 
+
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">###############################################&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Wating for connection to the action server&quot;</span><span class="p">)</span>
+
+    <span class="c1">#Wait for the server to be ready to receive goals </span>
+    <span class="n">client</span><span class="o">.</span><span class="n">wait_for_server</span><span class="p">()</span>
+
+    <span class="c1">#Creates a goal to send to the action server.</span>
+    <span class="n">goal</span> <span class="o">=</span> <span class="n">PoseStamped</span><span class="p">()</span>
+
+
+    <span class="n">goal</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x_position</span>
+    <span class="n">goal</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y_position</span>
+
+
+    <span class="n">goal</span> <span class="o">=</span> <span class="n">assignment_2_2022</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">PlanningGoal</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+
+    
+    <span class="c1">#Sends the goal to the action server.</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">send_goal</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">**Goal sent to the sever**&quot;</span><span class="p">)</span>
+    <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Press Enter to select an operation!&quot;</span><span class="p">)</span>
+
+    <span class="c1">#Back to the interface function </span>
+    <span class="n">interface</span><span class="p">()</span></div>
+      
+
+<span class="c1">#cancel_target function </span>
+<span class="c1">#this function is called when the user selects the cancel operation</span>
+<span class="c1">#it cancels the goal that is sent to the action server</span>
+<span class="c1">#the goal is canceled using the cancel_goal function</span>
+<span class="c1">#the cancel_goal function is a member function of the SimpleActionClient class</span>
+
+<div class="viewcode-block" id="cancel_target"><a class="viewcode-back" href="../../index.html#scripts.NodeA.cancel_target">[docs]</a><span class="k">def</span> <span class="nf">cancel_target</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cancels the goal that is sent to the action server using the cancel_goal function.</span>
+<span class="sd">    This function is called when the user selects the cancel operation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#Cancel the goal that is sent to the action server</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">cancel_goal</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Target canceled&quot;</span><span class="p">)</span>
+    <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Press Enter to select an operation!&quot;</span><span class="p">)</span>
+
+    <span class="c1">#Back to the interface function</span>
+    <span class="n">interface</span><span class="p">()</span></div>
+
+
+<span class="c1">#wrong function</span>
+<span class="c1">#this function is called when the user enters a wrong input</span>
+<span class="c1">#it prints a message and waits for 2 seconds</span>
+<div class="viewcode-block" id="wrong"><a class="viewcode-back" href="../../index.html#scripts.NodeA.wrong">[docs]</a><span class="k">def</span> <span class="nf">wrong</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prints a message and waits for 2 seconds. This function is called when the user enters a wrong input.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;!!!! Wrong input !!!!&quot;</span><span class="p">)</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">interface</span><span class="p">()</span></div>
+
+
+<span class="c1">#interface function</span>
+<span class="c1">#this function is called when the program starts</span>
+<span class="c1">#it prints the interface and asks the user to select an operation</span>
+<span class="c1">#the user can select the target position operation, the cancel operation or the exit operation</span>
+<span class="c1">#the user can select the target position operation by entering 1</span>
+<span class="c1">#the user can select the cancel operation by entering 2</span>
+<span class="c1">#the user can select the exit operation by entering 3</span>
+<span class="c1">#the user can select the target position operation by calling the target_client function</span>
+<span class="c1">#the user can select the cancel operation by calling the cancel_target function</span>
+<span class="c1">#the user can select the exit operation by calling the exit function</span>
+<div class="viewcode-block" id="interface"><a class="viewcode-back" href="../../index.html#scripts.NodeA.interface">[docs]</a><span class="k">def</span> <span class="nf">interface</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prints the interface and asks the user to select an operation. The user can select the target position operation by</span>
+<span class="sd">    entering 1, the cancel operation by entering 2, or the exit operation by entering 3. This function then calls the</span>
+<span class="sd">    corresponding function based on the user input.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;clear&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;###############################################</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>    
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;##          Robot control interface          ##</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;###############################################</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;1:Target position</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;2:Cancel</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;3:Exit</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>   
+
+    <span class="c1">#Ask the user to select an operation</span>
+    <span class="n">user_selection</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Select your operation: &quot;</span><span class="p">)</span>
+    
+    <span class="c1">#Check the user selection</span>
+    <span class="k">if</span>   <span class="p">(</span><span class="n">user_selection</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">):</span>
+        <span class="n">target_client</span><span class="p">()</span>
+
+    <span class="k">elif</span> <span class="p">(</span><span class="n">user_selection</span> <span class="o">==</span> <span class="s2">&quot;2&quot;</span><span class="p">):</span>
+        <span class="n">cancel_target</span><span class="p">()</span> 
+
+    <span class="k">elif</span> <span class="p">(</span><span class="n">user_selection</span> <span class="o">==</span> <span class="s2">&quot;3&quot;</span><span class="p">):</span>
+        <span class="n">exit</span><span class="p">()</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">wrong</span><span class="p">()</span></div>
+
+<span class="c1">#start_description function</span>
+<span class="c1">#this function is called when the program starts</span>
+<span class="c1">#it prints the description of the node</span>
+<span class="c1">#it waits for the user to press enter</span>
+<span class="c1">#it sets the start_description_flag to 0</span>
+<span class="c1">#the start_description_flag is used to print the description of the node only once</span>
+<div class="viewcode-block" id="start_description"><a class="viewcode-back" href="../../index.html#scripts.NodeA.start_description">[docs]</a><span class="k">def</span> <span class="nf">start_description</span><span class="p">(</span><span class="n">start_description_flag</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prints a description of Node A and waits for user input to continue.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        start_description_flag (int): A flag indicating whether to print the description or not.</span>
+<span class="sd">            If the flag is 1, the description will be printed. Otherwise, nothing will be printed.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">start_description_flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;clear&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">------------------Node A description------------------</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This is the node that implements an action client, &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;allowing the user to set a target (x, y) or to &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cancel it.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">----------------------------------------------------</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Also this node publishes the robot position and velocity &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;as a custom message (x,y, vel_x, vel_z), by relying &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;on the values published on the topic /odom.&quot;</span><span class="p">)</span>
+        <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Press Enter to continue!&quot;</span><span class="p">)</span>
+        <span class="n">start_description_flag</span><span class="o">=</span><span class="mi">0</span>   </div>
+
+
+<span class="c1">#callback function</span>
+<span class="c1">#this function is called when the node receives a message from the topic /odom</span>
+<span class="c1">#this fuction prints the message received from the topic /odom</span>
+<span class="c1">#this fuction publishes the message received from the topic /odom as a custom message</span>
+<span class="c1">#the custom message is of type odom_custom_msg</span>
+<span class="c1">#the custom message is published on the topic /position_and_velocity</span>
+<div class="viewcode-block" id="callback"><a class="viewcode-back" href="../../index.html#scripts.NodeA.callback">[docs]</a><span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Callback function that is called when a message is received from the /odom topic.</span>
+
+<span class="sd">    The function publishes the received message as a custom message of type odom_custom_msg on the</span>
+<span class="sd">    /position_and_velocity topic.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (Odometry): The received message from the /odom topic.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">my_publisher</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="s1">&#39;position_and_velocity&#39;</span><span class="p">,</span> <span class="n">odom_custom_msg</span><span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">my_custom_message</span> <span class="o">=</span> <span class="n">odom_custom_msg</span><span class="p">()</span>
+    <span class="n">my_custom_message</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span>
+    <span class="n">my_custom_message</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span>
+    <span class="n">my_custom_message</span><span class="o">.</span><span class="n">vel_x</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">twist</span><span class="o">.</span><span class="n">twist</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">x</span>
+    <span class="n">my_custom_message</span><span class="o">.</span><span class="n">vel_y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">twist</span><span class="o">.</span><span class="n">twist</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">y</span>
+
+    <span class="n">my_publisher</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">my_custom_message</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1">#start_description_flag is used to print the description of the node only once</span>
+    <span class="n">start_description</span><span class="p">(</span><span class="n">start_description_flag</span><span class="p">)</span>
+    
+    <span class="c1">#Initialize the node</span>
+    <span class="c1">#The name of the node is NodeA</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s1">&#39;NodeA&#39;</span><span class="p">)</span>
+    <span class="c1">#Subscribe to the topic /odom</span>
+    <span class="c1">#The callback function is called when the node receives a message from the topic /odom</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="s2">&quot;/odom&quot;</span><span class="p">,</span> <span class="n">Odometry</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+
+    <span class="c1">#Creates the SimpleActionClient, passing the type of the action</span>
+    <span class="c1">#to the constructor.</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">actionlib</span><span class="o">.</span><span class="n">SimpleActionClient</span><span class="p">(</span><span class="s1">&#39;/reaching_goal&#39;</span><span class="p">,</span><span class="n">assignment_2_2022</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">PlanningAction</span> <span class="p">)</span>
+    
+    <span class="c1">#Call the interface function</span>
+    <span class="c1">#the interface function prints the interface and asks the user to select an operation</span>
+    <span class="c1">#the user can select the target position operation, the cancel operation or the exit operation</span>
+    <span class="n">interface</span><span class="p">()</span>
+
+    <span class="c1"># spin() simply keeps python from exiting until this node is stopped</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Peyman Peyvandi Pour.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
