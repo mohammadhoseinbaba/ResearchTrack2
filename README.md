@@ -1,4 +1,4 @@
-## RsearchTrack2
+## ResearchTrack2
 Mohammadhossein baba S5919466
 
 The assignment of Research Track 2 course consist of three parts that are presented in this repository as shown below:
