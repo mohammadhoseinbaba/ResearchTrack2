@@ -1,4 +1,4 @@
-# 📘 Research Track 2 – Second Assignment
+# 📘 Research Track 2 – First Assignment
 **Student:** Mohammadhossein Baba  
 **ID:** S5919466
 
@@ -9,7 +9,7 @@
 
 ## 🧠 Project Overview
 
-This ROS package is part of the second assignment for the Research Track II course. It interacts with a simulated robot in Gazebo and consists of three main ROS nodes that handle robot navigation, target tracking, and performance analysis.
+This ROS package is part of the First assignment for the Research Track II course. It interacts with a simulated robot in Gazebo and consists of three main ROS nodes that handle robot navigation, target tracking, and performance analysis.
 
 ---
 
